@@ -1,4 +1,4 @@
-## MAGeCK-VISPR and MAGeCKFlute (CRISPR screen analysis)
+## CRISPR screen analysis
 
 This pipeline performs the following tasks:
 - Create an isolated environment and intallation for CRISPR screen analysis
