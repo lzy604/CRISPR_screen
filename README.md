@@ -3,12 +3,20 @@
 This pipeline performs the following tasks:
 - Create an isolated environment and intallation for CRISPR screen analysis
 - Installation
-- Quality control,Normalization, Batch effect removal[Optional]
-- Adapter Trim[Optional]([Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)) 
+- Quality control,Normalization
 - [MAGeCK](https://sourceforge.net/p/mageck/wiki/Home/) or [MAGeCK-VISPR](https://bitbucket.org/liulab/mageck-vispr/src/master/)
 - Gene hit identification and downstream functional enrichment analysis([MAGeCKFlute](https://www.bioconductor.org/packages/devel/bioc/vignettes/MAGeCKFlute/inst/doc/MAGeCKFlute.html))
-- Visualization(R)
-- Running the pepline 
+- [Optional]Adapter Trim, Batch effect removal,Correct copy-number bias. 
+
+
+## System requirements
+- Linux/Unix
+- Python
+- R 
+
+# Wiki
+https://sourceforge.net/p/mageck/wiki/Home/
+https://www.bioconductor.org/packages/devel/bioc/vignettes/MAGeCKFlute/inst/doc/MAGeCKFlute.html#install-and-load-the-required-packages
 
 ## Installation
 We uses the Miniconda3 package management system to harmonize all of the software packages. 
@@ -17,13 +25,13 @@ Use the following commands to install Minicoda3：
 wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
 ```
-#### Create an isolated environment for CRISPR screen analysis
+### Create an isolated environment for CRISPR screen analysis
 ``` bash
 conda create -n CRSIPR
 conda activate CRSIPR
 ``` 
 
-#### Install tools
+### Install tools
 Tools needed for this analysis are: R, MAGeCK, libxml2, MAGeCK-VISPR,MAGeCKFlute 
 ~~~
 conda config --add channels conda-forge
@@ -34,7 +42,7 @@ conda install -c bioconda mageck
 conda install -c bioconda -c conda-forge mageck-vispr
 ~~~
 
-#### Install MAGeCKFlute using R
+### Install MAGeCKFlute using R
 ~~~
 R
 
@@ -45,147 +53,102 @@ R
 > devtools::install_github("liulab-dfci/MAGeCKFlute")
 ~~~
 
-
 ## Processing of CRISPR screen data with MAGeCK or MAGeCK-VISPR
 In a typical use case, CRISPR screen data are processed with MAGeCK (option A) step by step. If users want to perform QC and visualize the results, we recommend MAGeCK-VISPR (option B) instead. 
+
 ### A.Process CRISPR screen data step by step with MAGeCK ● Timing 1.5 h
 ```
+#Activate the CRSIPR environment 
+conda activate CRSIPR
 
-```
-### MAGeCKFlute 
+# Download and unzip the test data for both datasets, using the following commands:
+wget http://cistrome.org/MAGeCKFlute/demo.tar.gz 
+tar zxvf demo.tar.gz
+cd demo_data
 
-This package implements methods to perform quality control (QC), normalization, batch effect removal, gene hit identification and downstream functional enrichment analysis for CRISPR screens. Before using this package, please finish the preliminary analysis using [MAGeCK](https://sourceforge.net/p/mageck/wiki/Home/) or [MAGeCK-VISPR](https://bitbucket.org/liulab/mageck-vispr/src/master/). For more detail, please read our paper [Integrative analysis pipeline for pooled CRISPR functional genetic screens](https://www.nature.com/articles/s41596-018-0113-7).
-## Documentation
-Details on how to use MAGeCKFlute are available on bioconductor website: https://www.bioconductor.org/packages/release/bioc/html/MAGeCKFlute.html
+# Generate a count table for Dataset 1 with the mageck count function, by first changing the working directory to a directory that contains raw .fastq data and is able to store the output of mageck count as follows:
+cd path/to/demo_data/mageck_count
 
+# To run the mageck count on Dataset 1, type the following command:
+mageck count -l library.csv -n GSC_0131 --sample-label day0_r1, day0_r2,day23_r1,day23_r2 --fastq GSC_0131_Day0_Rep1.fastq.gz GSC_0131_Day0_Rep2.fastq.gz GSC_0131_Day23_Rep1.fastq.gz GSC_0131_ Day23_Rep2.fastq.gz
 
+# Identify screen hits using MAGeCK RRA(MAGeCK RRA for comparison between two conditions, such as an initial condition versus cells cultured for a period of time. )
+$mageck test -k GSC_0131.count.txt -t day23_r1,day23_r2 -c day0_r1,day0_r2 -n GSC_0131_rra --remove-zero both --remove- zero-threshold 0
 
-## RNA-seq Data Standards
-1. A bulk RNA-seq experiment is an RNA-seq assay in which the average library insert size is 200 base pairs.
-2. Experiments should have two or more replicates. Assays performed using EN-TEx samples may be exempted due to limited availability of experimental material.
-3. Each replicate should have 30 million aligned reads, although older projects aimed for 20 million reads. Best practices for ENCODE2 RNA-seq experiments have been outlined here.
-4. Replicate concordance: the gene level quantification should have a Spearman correlation of >0.9 between isogenic replicates and >0.8 between anisogenic replicates (i.e. replicates from different donors).
-
-## System requirements
-- Linux/Unix
-- Python
-- R 
-
-
-## Installation
-We uses the Miniconda3 package management system to harmonize all of the software packages. 
-Use the following commands to install Minicoda3：
-``` bash
-wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh
-```
-#### Create an isolated environment for RNA-seq
-``` bash
-conda create -n rna-seq
-conda activate rna-seq
-``` 
-
-#### Install tools
-Tools needed for this analysis are: R, samtools, FastQC, Trim Galore, STAR, RSeQC, stringtie, gffcompare, htseq-count. 
-``` bash
-conda config --add channels bioconda
-conda config --add channels conda-forge
-conda install -c r r 
-conda install -c bioconda samtools
-conda install -c bioconda fastqc
-conda install trim-galore
-conda install STAR
-conda install -c bioconda rseqc 
-conda install -c bioconda htseq
-conda install -c bioconda bioconductor-deseq2
-conda install -c bioconda stringtie 
+# Identify screen hits using MAGeCK MLE. (If an experiment contains more than two conditions, for example, a three-condition design: day 0, drug treatment and DMSO treatment, we recommend using MAGeCK MLE)
+cd path/to/demo_data/mageck_mle
+mageck mle --count-table rawcount.txt --design-matrix designmatrix. txt --norm-method control --control-sgrna nonessential_ctrl_sgrna_ list.txt --output-prefix braf.mle ##modify designmatrix table as your expriemnt design
 ```
 
-#### Genome files
-Obtain a reference genome from Ensembl, iGenomes, NCBI or UCSC. In this example analysis we will use the mouse mm10 version of the genome from UCSC.
-```bash
-mkdir anno
-cd anno
-mkdir mm10
-cd mm10
-wget ftp://igenome:G3nom3s4u@ussd-ftp.illumina.com/Mus_musculus/UCSC/mm10/Mus_musculus_UCSC_mm10.tar.gz
+### (B) Process CRISPR screen data with MAGeCK-VISPR ● Timing 1.5 h
+```
+#Activate the CRSIPR environment 
+conda activate CRSIPR
 
+#Choose a workflow directory and initialize the workflow with the .fastq or .fastq.gz files that contain the raw reads
+mageck-vispr init workflow --reads path/to/file/*.fastq*
+
+#Configure the workflow
+cd workflow
+
+# To check whether the ‘config.yaml’ files have been configured correctly,enter the following command line into the terminal:
+$snakemake –n
+
+# Execute the workflow.
+snakemake --cores 8
+
+# Visualize the results with VISPR.
+vispr server results/*.vispr.yaml
 ```
 
-Generate genome indexes files for STAR mapping
-```bash
-tar zxvf Mus_musculus_UCSC_mm10.tar.gz
-STAR --runThreadN 30 --runMode genomeGenerate --genomeDir star_index_mm10 --genomeFastaFiles /Sequence/WholeGenomeFasta/genome.fa --sjdbGTFfile /Annotation/Archives/archive-current/Genes/genes.gtf 
-```
-#### Download the public data
+## MAGeCKFlute 
+This package implements methods to perform quality control (QC), normalization, batch effect removal, gene hit identification and downstream functional enrichment analysis for CRISPR screens. 
 
+### Functional analysis for MAGeCK RRA results
 ```
-for ((i = 12;i<=15;i++)); #
-do
-fastq-dump --split-3 -O data/ SRR0020$i.sra.sra 
-done
-```
+#Activate the CRSIPR environment 
+conda activate CRSIPR
 
-## Quality control on FastQ files 
-FastQC aims to provide a simple way to do some quality control checks on raw sequence data coming from high throughput sequencing pipelines. 
+#use the R interactive shell
+R
 
-run FastQC interactively or using ht CLI, which offers the following options:
-```bash
-fastqc seqfile1 seqfile2 .. seqfileN
-```
+ >library(MAGeCKFlute)
+ >setwd(‘path/to/file/’)
+ 
+# To perform functional analysis for MAGeCK RRA results 
+>FluteRRA(gene_summary = "path/to/file/rra.gene_summary.txt", prefix="FluteRRA", organism="hsa")
 
-## Adapter Trim[OPTIONAL]
-Use trim_glore to trim sequence adapter from the read FASTQ files.
-```bash
-trim_galore -q 20 --phred33 --stringency 3 --length 20 -e 0.1 \
-            --paired $dir/cmp/01raw_data/$fq1 $dir/cmp/01raw_data/$fq2  \
-            --gzip -o $input_data
+ 
+ 
 ```
 
-## Alignment
-Perform alignments with STAR to the genome and transcriptome.
-
-```bash
-STAR --runThreadN 10 --genomeDir ~/anno/mm10/ --readFilesCommand zcat --readFilesIn R1.fastq.gz R2.fastq.gz --outFileNamePrefix samplename   --outSAMtype BAM SortedByCoordinate --outBAMsortingThreadN 5
+### Functional analysis for MAGeCK RRA results
 ```
-Visualization the mapping ratio by R
-```bash
-Rscript ~rcode/mapping.R
+#Activate the CRSIPR environment 
+conda activate CRSIPR
+
+#use the R interactive shell
+R
+
+ >library(MAGeCKFlute)
+ >setwd(‘path/to/file/’)
+ 
+# To perform functional analysis for MAGeCK MLE  results 
+>FluteMLE(gene_summary="path/to/file/mle.gene_summary.txt", ctrlname="dmso", treatname="plx", organism="hsa", prefix="FluteMLE", -pathway_limit = c(3,50))
+
+### (Optional) Batch effect removal
+```R
+> library(MAGeCKFlute)
+> BatchRemove(mat = "rawcount.txt", batchMat = "BatchMatrix. txt", prefix = "BatchCorrect", -pca = T, -cluster = T, -outdir = ".")
 ```
+### (Optional) Correct copy-number bias. 
+MAGeCK RRA and MAGeCK MLE contain an optional method to correct copy-number biases in the calculated RRA scores and beta scores, respectively. We recommend that users perform copy-number bias correction if the CNV information is available for the cell line. 
 
-## QC reports for RNA-seq
-RSeQC package comprehensively evaluate different aspects of RNA-seq experiments, such as sequence quality, GC bias, polymerase chain reaction bias, nucleotide composition bias, sequencing depth, strand specificity, coverage uniformity and read distribution over the genome structure. 
-
-‘geneBody_coverage.py’ scales all transcripts to 100 nt and calculates the number of reads covering each nucleotide position. Finally, it generates a plot illustrating the coverage profile along the gene body.
-```bash
-samtools index input.sorted.bam 
-geneBody_coverage.py -r hg19.housekeeping.bed -i test1.bam,test2.bam,test3.bam  -o output
 ```
+# To perform MAGeCK RRA with copy-number bias correction, type the following:
+mageck test -k rawcount.txt -t HL60.final -c HL60.initial -n rra_ cnv --cnv-norm cnv_data.txt –cell-line HL60_HAEMATOPOIETIC_AND_ LYMPHOID_TISSUE
 
-'clipping_profile.py' calculate the distributions of clipped nucleotides across reads.This program is used to estimate clipping profile of RNA-seq reads from BAM or SAM file. Note that to use this funciton, CIGAR strings within SAM/BAM file should have ‘S’ operation (This means your reads aligner should support clipped mapping).
-```bash
-clipping_profile.py -i test1.bam -s "PE" -o out
-```
+# To perform MAGeCK MLE with copy-number bias correction, type the following:
+mageck mle --count-table rawcount.txt --design-matrix designma- trix.txt --cnv-norm cnv_data.txt
 
-## Quantifying gene expression
-Counting reads in features with htseq-count
-```bash
-htseq-count -f bam -r name -s no -a 10 -t exon -i gene_id -m intersection-nonempty yourfile_name.bam ~/reference/hisat2_reference/Homo_sapiens.GRCh38.86.chr_patch_hapl_scaff.gtf > counts.txt
-```
-
-Calculate RPKM and TPM by R
-```bash
-Rscript ~rcode/counts2rpkm_tpm.R
-```
-
-## Differential expression analysis
-DE analysis is done using the DESeq2 Bioconductor package. It takes the merged raw read counts (from HTseq-count) as an input:
-```bash
-Rscript ~rcode/deseq2.R
-```
-
-## Running the pepline using the bash file
-One command for running
-```bash
-bash rna_seq.bash
 ```
