@@ -1,38 +1,43 @@
-## MAGeCKFlute (CRISPR screen analysis)
+## MAGeCK-VISPR and MAGeCKFlute (CRISPR screen analysis)
 
 This pipeline performs the following tasks:
 - Create an isolated environment and intallation for CRISPR screen analysis
-- Quality control,normalization, batch effect removal,
-- Adapter Trim([Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)) 
+- Installation
+- Quality control,Normalization, Batch effect removal[Optional]
+- Adapter Trim[Optional]([Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)) 
 - [MAGeCK](https://sourceforge.net/p/mageck/wiki/Home/) or [MAGeCK-VISPR](https://bitbucket.org/liulab/mageck-vispr/src/master/)
-- Quantifying gene expression([HTSeq-count](https://github.com/htseq/htseq))
-- Gene hit identification and downstream functional enrichment analysis
+- Gene hit identification and downstream functional enrichment analysis([MAGeCKFlute](https://www.bioconductor.org/packages/devel/bioc/vignettes/MAGeCKFlute/inst/doc/MAGeCKFlute.html))
 - Visualization(R)
 - Running the pepline 
 
-This package implements methods to perform quality control (QC), normalization, batch effect removal, gene hit identification and downstream functional enrichment analysis for CRISPR screens. Before using this package, please finish the preliminary analysis using . For more detail, please read our paper [Integrative analysis pipeline for pooled CRISPR functional genetic screens](https://www.nature.com/articles/s41596-018-0113-7).
-
-
 ## Installation
-Installing the package in a fresh R environment may take a long time. For any questions or comments, please post it to the [MAGeCK Google group](https://groups.google.com/d/forum/mageck).
+We uses the Miniconda3 package management system to harmonize all of the software packages. 
+Use the following commands to install Minicoda3：
+``` bash
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+```
+#### Create an isolated environment for CRISPR screen analysis
+``` bash
+conda create -n CRSIPR
+conda activate CRSIPR
+``` 
 
-
-### Prerequisites
-To install MAGeCKFlute, you have to first install conda following the document (https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html#install-macos-silent). Afterwards you have to register the bioconda and conda-forge channels as a package source for conda.
-
+#### Install tools
+Tools needed for this analysis are: R, MAGeCK, libxml2, MAGeCK-VISPR,MAGeCKFlute 
 ~~~
-$ conda config --add channels conda-forge
-$ conda config --add channels bioconda
-$ conda config --add channels r
-~~~
-
-Before start installation, you may also need to install the libxml2 which is required by the R package XML.
-~~~
+conda config --add channels conda-forge
+conda config --add channels bioconda
+conda config --add channels r
 conda install -c anaconda libxml2
+conda install -c bioconda mageck
+conda install -c bioconda -c conda-forge mageck-vispr
 ~~~
 
-### Installation using R
+#### Install MAGeCKFlute using R
 ~~~
+R
+
 > install.packages(c("devtools", "BiocManager"), repos = "https://cloud.r-project.org")
 > BiocManager::install(c("pathview", "biomaRt", "msigdbr", "dendextend", "pheatmap", "sva", "ggrepel", "knitr", "clusterProfiler", "depmap"))
 > BiocManager::install("MAGeCKFlute") # Released version
@@ -40,46 +45,16 @@ conda install -c anaconda libxml2
 > devtools::install_github("liulab-dfci/MAGeCKFlute")
 ~~~
 
-## Documentation
-Details on how to use MAGeCKFlute are available on bioconductor website: https://www.bioconductor.org/packages/release/bioc/html/MAGeCKFlute.html
 
+## Processing of CRISPR screen data with MAGeCK or MAGeCK-VISPR
+In a typical use case, CRISPR screen data are processed with MAGeCK (option A) step by step. If users want to perform QC and visualize the results, we recommend MAGeCK-VISPR (option B) instead. 
+### A.Process CRISPR screen data step by step with MAGeCK ● Timing 1.5 h
+```
 
-## Contacts
-
-* Binbin Wang (wangbinbintj@gmail.com)
-* Wei Li (li.david.wei@gmail.com)CRISPR screen PIPELINE
+```
 ### MAGeCKFlute 
 
 This package implements methods to perform quality control (QC), normalization, batch effect removal, gene hit identification and downstream functional enrichment analysis for CRISPR screens. Before using this package, please finish the preliminary analysis using [MAGeCK](https://sourceforge.net/p/mageck/wiki/Home/) or [MAGeCK-VISPR](https://bitbucket.org/liulab/mageck-vispr/src/master/). For more detail, please read our paper [Integrative analysis pipeline for pooled CRISPR functional genetic screens](https://www.nature.com/articles/s41596-018-0113-7).
-
-
-## Installation
-Installing the package in a fresh R environment may take a long time. For any questions or comments, please post it to the [MAGeCK Google group](https://groups.google.com/d/forum/mageck).
-
-
-### Prerequisites
-To install MAGeCKFlute, you have to first install conda following the document (https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html#install-macos-silent). Afterwards you have to register the bioconda and conda-forge channels as a package source for conda.
-
-~~~
-$ conda config --add channels conda-forge
-$ conda config --add channels bioconda
-$ conda config --add channels r
-~~~
-
-Before start installation, you may also need to install the libxml2 which is required by the R package XML.
-~~~
-conda install -c anaconda libxml2
-~~~
-
-### Installation using R
-~~~
-> install.packages(c("devtools", "BiocManager"), repos = "https://cloud.r-project.org")
-> BiocManager::install(c("pathview", "biomaRt", "msigdbr", "dendextend", "pheatmap", "sva", "ggrepel", "knitr", "clusterProfiler", "depmap"))
-> BiocManager::install("MAGeCKFlute") # Released version
-# Or
-> devtools::install_github("liulab-dfci/MAGeCKFlute")
-~~~
-
 ## Documentation
 Details on how to use MAGeCKFlute are available on bioconductor website: https://www.bioconductor.org/packages/release/bioc/html/MAGeCKFlute.html
 
