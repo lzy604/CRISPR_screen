@@ -7,6 +7,7 @@ This pipeline performs the following tasks:
 - [MAGeCK](https://sourceforge.net/p/mageck/wiki/Home/) or [MAGeCK-VISPR](https://bitbucket.org/liulab/mageck-vispr/src/master/)
 - Gene hit identification and downstream functional enrichment analysis([MAGeCKFlute](https://www.bioconductor.org/packages/devel/bioc/vignettes/MAGeCKFlute/inst/doc/MAGeCKFlute.html))
 - [Optional]Adapter Trim, Batch effect removal,Correct copy-number bias. 
+- Run by Bash file
 
 
 ## System requirements
@@ -117,8 +118,6 @@ R
  
 # To perform functional analysis for MAGeCK RRA results 
 >FluteRRA(gene_summary = "path/to/file/rra.gene_summary.txt", prefix="FluteRRA", organism="hsa")
-
- 
  
 ```
 
@@ -136,11 +135,16 @@ R
 # To perform functional analysis for MAGeCK MLE  results 
 >FluteMLE(gene_summary="path/to/file/mle.gene_summary.txt", ctrlname="dmso", treatname="plx", organism="hsa", prefix="FluteMLE", -pathway_limit = c(3,50))
 
+
+```
+
 ### (Optional) Batch effect removal
-```R
+```
+R
 > library(MAGeCKFlute)
 > BatchRemove(mat = "rawcount.txt", batchMat = "BatchMatrix. txt", prefix = "BatchCorrect", -pca = T, -cluster = T, -outdir = ".")
 ```
+
 ### (Optional) Correct copy-number bias. 
 MAGeCK RRA and MAGeCK MLE contain an optional method to correct copy-number biases in the calculated RRA scores and beta scores, respectively. We recommend that users perform copy-number bias correction if the CNV information is available for the cell line. 
 
