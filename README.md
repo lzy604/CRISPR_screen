@@ -2,8 +2,6 @@
 
 This pipeline performs the following tasks:
 - Create an isolated environment and intallation for CRISPR screen analysis
-- Installation
-- Quality control,Normalization
 - [MAGeCK](https://sourceforge.net/p/mageck/wiki/Home/) or [MAGeCK-VISPR](https://bitbucket.org/liulab/mageck-vispr/src/master/)
 - Gene hit identification and downstream functional enrichment analysis([MAGeCKFlute](https://www.bioconductor.org/packages/devel/bioc/vignettes/MAGeCKFlute/inst/doc/MAGeCKFlute.html))
 - [Optional]Adapter Trim, Batch effect removal,Correct copy-number bias. 
